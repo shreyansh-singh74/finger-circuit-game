@@ -86,12 +86,13 @@
             z-index: 1;
             display: block;
             max-width: 800px;
-            border: 1px solid rgba(0, 0, 0, 0.1); /* Add subtle border to make canvas visible */
-            touch-action: none; /* Prevent browser handling of touch events */
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            touch-action: none;
             background-image: url('assets/map.svg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            aspect-ratio: 350/500; /* Fixed aspect ratio based on the original design */
         }
         
         .nav-bar {
@@ -157,16 +158,17 @@
             position: absolute;
             width: 100px;
             height: 40px;
-            background-color: #ff6699;
+            background-color: rgba(255, 102, 153, 0.7); /* More vibrant pink */
             border-radius: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
-            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); /* Text shadow for readability */
             z-index: 3;
             opacity: 1;
             transition: opacity 0.5s ease;
+            backdrop-filter: blur(1px); /* Slight blur effect for better visibility */
         }
 
         .start-arrow {
@@ -311,10 +313,9 @@
         <div id="startPoint" class="start-point">スタート</div>
         <div id="startArrow" class="start-arrow">
             <svg width="30" height="40" viewBox="0 0 30 40">
-                <path d="M15 0 L30 15 L15 30 L0 15 Z" fill="#ff6699"/>
-                <path d="M15 5 L15 25" stroke="white" stroke-width="3"/>
-                <path d="M15 5 L10 10" stroke="white" stroke-width="3"/>
-                <path d="M15 5 L20 10" stroke="white" stroke-width="3"/>
+                <path d="M15 5 L15 35" stroke="#ff6699" stroke-width="3"/>
+                <path d="M15 5 L10 10" stroke="#ff6699" stroke-width="3"/>
+                <path d="M15 5 L20 10" stroke="#ff6699" stroke-width="3"/>
             </svg>
         </div>
 
@@ -387,7 +388,7 @@
                 lastPoint: null,
                 isDrawing: false,
                 startPoint: { x: 0, y: 0 }, // Will be set properly in initializeCircuitPath
-                startRadius: 20,
+                startRadius: 8, // Reduced from 12 to 8
                 circuitPath: [],
                 completionThreshold: 20, // Distance to consider the circuit completed when returning to start
                 accuracy: 0
@@ -395,9 +396,25 @@
 
             // Set canvas size
             function resizeCanvas() {
+                // Get the container dimensions
                 const container = canvas.parentElement;
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight * 0.7;
+                
+                // Calculate the available width and height
+                const availableWidth = Math.min(window.innerWidth, 800); // Cap at max-width
+                
+                // Maintain the aspect ratio of 350:500 (from the original design)
+                const aspectRatio = 350/500;
+                
+                // Set canvas dimensions based on available width and maintaining aspect ratio
+                canvas.width = availableWidth;
+                canvas.height = availableWidth / aspectRatio;
+                
+                // Make sure the canvas height doesn't exceed the available height
+                const maxHeight = window.innerHeight * 0.7;
+                if (canvas.height > maxHeight) {
+                    canvas.height = maxHeight;
+                    canvas.width = maxHeight * aspectRatio;
+                }
                 
                 // Re-initialize circuit path after resize
                 initializeCircuitPath();
@@ -417,38 +434,72 @@
             
             // Create circuit path
             function initializeCircuitPath() {
-                // Get current canvas dimensions
-                const canvasRect = canvas.getBoundingClientRect();
-                
-                // Calculate start point relative to current canvas size - positioned on a road in the map
-                gameState.startPoint = { 
-                    x: canvasRect.width * 0.25, 
-                    y: canvasRect.height * 0.7 
-                };
-
-                // Define the circuit path using percentages - following roads on the map
-                gameState.circuitPath = [
-                    { x: gameState.startPoint.x, y: gameState.startPoint.y },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.1, y: gameState.startPoint.y - canvasRect.height * 0.1 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.2, y: gameState.startPoint.y - canvasRect.height * 0.15 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.3, y: gameState.startPoint.y - canvasRect.height * 0.1 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.4, y: gameState.startPoint.y - canvasRect.height * 0.2 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.5, y: gameState.startPoint.y - canvasRect.height * 0.3 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.6, y: gameState.startPoint.y - canvasRect.height * 0.2 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.5, y: gameState.startPoint.y - canvasRect.height * 0.1 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.4, y: gameState.startPoint.y },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.3, y: gameState.startPoint.y + canvasRect.height * 0.1 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.2, y: gameState.startPoint.y + canvasRect.height * 0.05 },
-                    { x: gameState.startPoint.x + canvasRect.width * 0.1, y: gameState.startPoint.y + canvasRect.height * 0.02 },
-                    { x: gameState.startPoint.x, y: gameState.startPoint.y }
+                // Define the base coordinates for a 350x500 canvas
+                // These are the fixed coordinates that will be scaled to any screen size
+                const baseCoordinates = [
+                    // Start point
+                    { x: 73, y: 150 },
+                    
+                    // Vertical line up
+                    { x: 75, y: 80 },
+                    { x: 75, y: 50 },
+                    
+                    // Top loop
+                    { x: 100, y: 38 },
+                    { x: 122, y: 70 },
+                    { x: 120, y: 100 },
+                    { x: 122, y: 115 },
+                    
+                    // S-curve section
+                    { x: 120, y: 135 },
+                    { x: 140, y: 185 },
+                    { x: 170, y: 235 },
+                    { x: 220, y: 270 },
+                    
+                    // Horizontal middle section
+                    { x: 235, y: 285 },
+                    
+                    // Right curve down
+                    { x: 265, y: 390 },
+                    { x: 275, y: 450 },
+                    
+                    // Bottom large loop
+                    { x: 250, y: 460 },
+                    { x: 220, y: 410 },
+                    { x: 240, y: 365 },
+                    { x: 188, y: 325 },
+                    { x: 165, y: 320 },
+                    
+                    // Return path
+                    { x: 178, y: 300 },
+                    { x: 178, y: 260 },
+                    { x: 100, y: 255 },
+                    { x: 73, y: 230 },
+                    { x: 73, y: 150 }
                 ];
-
+                
+                // Calculate the scale factors based on current canvas size
+                const scaleX = canvas.width / 350;
+                const scaleY = canvas.height / 500;
+                
+                // Set the start point
+                gameState.startPoint = {
+                    x: baseCoordinates[0].x * scaleX,
+                    y: baseCoordinates[0].y * scaleY
+                };
+                
+                // Scale all the coordinates to the current canvas size
+                gameState.circuitPath = baseCoordinates.map(point => ({
+                    x: point.x * scaleX,
+                    y: point.y * scaleY
+                }));
+                
                 // Position the start UI elements
                 positionStartElements();
                 
                 // Force redraw
                 drawCircuit();
-                console.log('Circuit drawn at:', gameState.startPoint);
+                console.log("Circuit drawn at:", gameState.startPoint, "with scale factors:", scaleX, scaleY);
             }
 
             // Position the start point and arrow UI elements
@@ -457,10 +508,10 @@
                 const startArrowElem = document.getElementById('startArrow');
                 
                 startPointElem.style.left = `${gameState.startPoint.x - 50}px`;
-                startPointElem.style.top = `${gameState.startPoint.y - 20}px`;
+                startPointElem.style.top = `${gameState.startPoint.y - -150}px`;
                 
-                startArrowElem.style.left = `${gameState.startPoint.x - 15}px`;
-                startArrowElem.style.top = `${gameState.startPoint.y - 70}px`;
+                startArrowElem.style.left = `${gameState.startPoint.x - 30}px`;
+                startArrowElem.style.top = `${gameState.startPoint.y - -50}px`;
             }
 
             // Draw the circuit guidelines
@@ -487,19 +538,19 @@
                 
                 // Add a pulsing effect to the start point
                 if (gameState.status === 'ready') {
-                    // Draw outer circle with animation
-                    const pulseSize = gameState.startRadius * 1.5 + Math.sin(Date.now() / 200) * 5;
+                    // Draw outer circle with animation - smaller pulse size
+                    const pulseSize = gameState.startRadius * 1.25 + Math.sin(Date.now() / 200) * 2;
                     ctx.beginPath();
                     ctx.arc(gameState.startPoint.x, gameState.startPoint.y, pulseSize, 0, Math.PI * 2);
                     ctx.strokeStyle = '#ff6699';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                     
-                    // Add "Start Here" text
-                    ctx.font = '14px Arial';
-                    ctx.fillStyle = '#ff6699'; // White text for better visibility on map
+                    // Add "Start Here" text - adjusted position for smaller circle
+                    ctx.font = '10px Arial';
+                    ctx.fillStyle = '#ff6699';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Start Here', gameState.startPoint.x, gameState.startPoint.y + gameState.startRadius * 3);
+                    ctx.fillText('', gameState.startPoint.x, gameState.startPoint.y + gameState.startRadius * 2.2);
                     
                     // Request animation frame to keep pulsing
                     if (gameState.status === 'ready') {
@@ -644,9 +695,9 @@
                     const dx = pos.x - gameState.startPoint.x;
                     const dy = pos.y - gameState.startPoint.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    console.log('Distance from start:', distance, 'Threshold:', gameState.startRadius * 3);
+                    console.log('Distance from start:', distance, 'Threshold:', gameState.startRadius * 2);
                     
-                    if (distance < gameState.startRadius * 3) { // Increased from *2 to make it easier to start
+                    if (distance < gameState.startRadius * 2) { // Adjusted from *2.5 to *2 for smaller circle
                         // Start drawing
                         gameState.isDrawing = true;
                         gameState.status = 'playing';
