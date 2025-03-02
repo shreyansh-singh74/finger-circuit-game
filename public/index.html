@@ -164,18 +164,46 @@
         }
         
         .logo img {
-            height: 40px; /* Adjust based on your logo size */
-            max-width: 200px;
+            height: 60px; /* Increased from 40px to 60px */
+            max-width: 240px; /* Increased from 200px to 240px */
             object-fit: contain;
         }
         
         .logo-line {
             display: inline-block;
-            width: 30px;
+            width: 40px; /* Increased from 30px to 40px */
             height: 2px;
             background: white;
-            margin: 0 10px;
+            margin: 0 12px; /* Increased from 10px to 12px */
             vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .title-banner h1 {
+                font-size: 16px;
+            }
+            .title-banner h2 {
+                font-size: 12px;
+            }
+            .mode-btn {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+            .nav-icon {
+                font-size: 10px;
+            }
+            .nav-icon svg {
+                max-height: 20px;
+            }
+            .logo {
+                font-size: 10px;
+            }
+            .logo img {
+                height: 45px; /* Increased from 30px to 45px */
+            }
+            .logo-line {
+                width: 35px; /* Increased from default in media query */
+            }
         }
     </style>
 </head>
