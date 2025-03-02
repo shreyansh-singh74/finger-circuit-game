@@ -130,28 +130,33 @@
 
         .mission-banner {
             position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 150px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px 0;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            margin-top: 50px; /* Position it below the "Get Ready" text */
+            width: 80%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
             text-align: center;
-            z-index: 5;
+            z-index: 4; /* Below white-belt (z-index: 4) but above canvas */
             opacity: 1;
             transition: opacity 0.5s ease;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .mission-banner h2 {
             color: black;
-            font-size: 16px;
+            font-size: 18px;
             margin: 0;
             font-weight: bold;
         }
 
         .mission-banner p {
             color: black;
-            font-size: 12px;
-            margin: 5px 0 0;
+            font-size: 14px;
+            margin: 8px 0 0;
         }
 
         .start-point {
@@ -180,34 +185,15 @@
             transition: opacity 0.5s ease;
         }
 
-        .white-belt {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
-            z-index: 4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-
-        .white-belt div {
-            font-size: 24px;
-            color: #333;
-        }
-
+        /* New result modal styling to match the image */
         .result-screen {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            z-index: 12;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -215,25 +201,97 @@
             text-align: center;
         }
 
-        .result-screen h2 {
-            font-size: 28px;
-            margin-bottom: 20px;
+        .result-modal {
+            width: 85%;
+            max-width: 320px;
+            background-color: #333;
+            border-radius: 12px;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .result-screen p {
-            font-size: 18px;
-            margin-bottom: 30px;
+        .result-modal::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M30,20 L70,20 L80,30 L80,70 L70,80 L30,80 L20,70 L20,30 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
+            background-size: 100px 100px;
+            opacity: 0.2;
+            z-index: -1;
         }
 
-        .result-screen button {
-            padding: 12px 30px;
-            background-color: #ff0000;
+        .result-title-jp {
             color: white;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .result-title-en {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .completion-label {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .completion-value {
+            font-size: 80px;
+            font-weight: bold;
+            color: #ff6699;
+            text-shadow: 0 0 15px #ff6699, 0 0 25px #ff6699;
+            margin: 0;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .completion-value .percent {
+            font-size: 24px;
+            margin-left: 5px;
+            color: #ff6699;
+            text-shadow: 0 0 10px #ff6699;
+        }
+
+        .result-button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 30px;
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
+            margin-bottom: 10px;
+            font-size: 14px;
             cursor: pointer;
-            margin: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .share-button {
+            background-color: #666;
+            color: white;
+        }
+
+        .retry-button {
+            background-color: #666;
+            color: white;
+        }
+
+        .map-button {
+            background-color: white;
+            color: #333;
         }
         
         /* Media queries for different screen sizes */
@@ -321,15 +379,23 @@
 
         <!-- White belt (initial instructions) -->
         <div id="whiteBelt" class="white-belt">
-            <div>Get Ready...</div>
+        
         </div>
 
-        <!-- Result screen -->
+        <!-- New Result screen that matches the image -->
         <div id="resultScreen" class="result-screen">
-            <h2>完了しました！</h2>
-            <p>精度: <span id="accuracyResult">85</span>%</p>
-            <button id="retryButton">もう一度</button>
-            <button id="shareButton">共有</button>
+            <div class="result-modal">
+                <div class="result-title-jp">フィニッシュ！</div>
+                <div class="result-title-en">FINISH !</div>
+                <div class="completion-label">完成度</div>
+                <div class="completion-value">
+                    <span id="accuracyResult">85</span>
+                    <span class="percent">%</span>
+                </div>
+                <button id="shareButton" class="result-button share-button">SNSでシェアする</button>
+                <button id="retryButton" class="result-button retry-button">もう一度遊ぶ</button>
+                <button id="mapButton" class="result-button map-button">マップに戻る</button>
+            </div>
         </div>
         
         <!-- Navigation bar -->
@@ -520,14 +586,29 @@
                 // Only clear the area where we'll draw the path
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw the circuit path (blue lines)
+                // Draw the circuit path with smooth corners (blue lines)
                 ctx.beginPath();
                 ctx.moveTo(gameState.circuitPath[0].x, gameState.circuitPath[0].y);
-                for (let i = 1; i < gameState.circuitPath.length; i++) {
-                    ctx.lineTo(gameState.circuitPath[i].x, gameState.circuitPath[i].y);
+                
+                // Instead of using lineTo for sharp corners, use bezier curves for smooth corners
+                for (let i = 1; i < gameState.circuitPath.length - 1; i++) {
+                    const current = gameState.circuitPath[i];
+                    const next = gameState.circuitPath[i + 1];
+                    
+                    // Calculate control points for the curve
+                    const xc = (current.x + next.x) / 2;
+                    const yc = (current.y + next.y) / 2;
+                    
+                    // Draw a quadratic curve to create rounded corners
+                    ctx.quadraticCurveTo(current.x, current.y, xc, yc);
                 }
+                
+                // Connect to the last point
+                const last = gameState.circuitPath[gameState.circuitPath.length - 1];
+                ctx.lineTo(last.x, last.y);
+                
                 ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)'; // Semi-transparent blue
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 6;
                 ctx.stroke();
                 
                 // Draw the start point (pink circle)
@@ -565,10 +646,27 @@
                 
                 ctx.beginPath();
                 ctx.moveTo(gameState.userPath[0].x, gameState.userPath[0].y);
-                for (let i = 1; i < gameState.userPath.length; i++) {
-                    ctx.lineTo(gameState.userPath[i].x, gameState.userPath[i].y);
+                
+                // Use smooth curves for the user's path too
+                for (let i = 1; i < gameState.userPath.length - 1; i++) {
+                    const current = gameState.userPath[i];
+                    const next = gameState.userPath[i + 1];
+                    
+                    // Calculate midpoint
+                    const xc = (current.x + next.x) / 2;
+                    const yc = (current.y + next.y) / 2;
+                    
+                    // Draw a quadratic curve
+                    ctx.quadraticCurveTo(current.x, current.y, xc, yc);
                 }
-                ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Semi-transparent red
+                
+                // Connect to the last point if there are enough points
+                if (gameState.userPath.length > 1) {
+                    const last = gameState.userPath[gameState.userPath.length - 1];
+                    ctx.lineTo(last.x, last.y);
+                }
+                
+                ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)'; // Semi-transparent blue
                 ctx.lineWidth = 3;
                 ctx.stroke();
             }
@@ -618,8 +716,9 @@
                 // Round to whole number
                 gameState.accuracy = Math.round(gameState.accuracy);
                 
-                // Update UI
+                // Update UI immediately
                 document.getElementById('accuracyResult').textContent = gameState.accuracy;
+                console.log("Accuracy calculated: " + gameState.accuracy + "%");
             }
 
             // Resample a path to have a specific number of points
@@ -785,6 +884,8 @@
 
             // Show result screen
             function showResultScreen() {
+                // Make sure the accuracy result is updated with the calculated value
+                document.getElementById('accuracyResult').textContent = gameState.accuracy;
                 document.getElementById('resultScreen').style.display = 'flex';
             }
 
@@ -812,14 +913,18 @@
                     setTimeout(function() {
                         try {
                             whiteBelt.style.opacity = '0';
-                            whiteBelt.style.display = 'none';
-                            missionBanner.style.opacity = '0';
-                            missionBanner.style.display = 'none';
-                            gameState.status = 'ready';
-                            console.log("Game is now ready! Status:", gameState.status);
-                            
-                            // Force redraw after ready state
-                            drawCircuit();
+                            setTimeout(function() {
+                                whiteBelt.style.display = 'none';
+                                missionBanner.style.opacity = '0';
+                                setTimeout(function() {
+                                    missionBanner.style.display = 'none';
+                                    gameState.status = 'ready';
+                                    console.log("Game is now ready! Status:", gameState.status);
+                                    
+                                    // Force redraw after ready state
+                                    drawCircuit();
+                                }, 500);
+                            }, 500);
                         } catch (error) {
                             console.error("Error in ready state transition:", error);
                         }
@@ -844,6 +949,7 @@
                     // Add button event listeners
                     document.getElementById('retryButton').addEventListener('click', resetGame);
                     document.getElementById('shareButton').addEventListener('click', shareResult);
+                    document.getElementById('mapButton').addEventListener('click', returnToMap);
                     
                     console.log("Game initialized, canvas size:", canvas.width, "x", canvas.height);
                     console.log("Start point:", gameState.startPoint);
@@ -885,14 +991,18 @@
                 // Direct timeout without nesting
                 setTimeout(function() {
                     whiteBelt.style.opacity = '0';
-                    whiteBelt.style.display = 'none';
-                    missionBanner.style.opacity = '0';
-                    missionBanner.style.display = 'none';
-                    gameState.status = 'ready';
-                    console.log("Game reset and ready! Status:", gameState.status);
-                    
-                    // Force redraw after ready state
-                    drawCircuit();
+                    setTimeout(function() {
+                        whiteBelt.style.display = 'none';
+                        missionBanner.style.opacity = '0';
+                        setTimeout(function() {
+                            missionBanner.style.display = 'none';
+                            gameState.status = 'ready';
+                            console.log("Game reset and ready! Status:", gameState.status);
+                            
+                            // Force redraw after ready state
+                            drawCircuit();
+                        }, 500);
+                    }, 500);
                 }, 2000);
             }
 
@@ -907,6 +1017,12 @@
                 } else {
                     alert(`You completed the circuit with ${gameState.accuracy}% accuracy! Screenshot to share.`);
                 }
+            }
+            
+            // Return to map
+            function returnToMap() {
+                // Navigate to map page or show map view
+                window.location.href = "index.html"; // Or any other map page
             }
             
             // Debug function to help troubleshoot issues
