@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finger Circuit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Noto Sans', sans-serif;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .title-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px 0;
+            border-radius: 0 0 20px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 70px; /* Fixed height */
+        }
+        
+        .title-banner h1 {
+            color: black;
+            font-size: 18px;
+            margin: 0;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+        
+        .title-banner h2 {
+            color: black;
+            font-size: 14px;
+            margin: 5px 0 0;
+            font-weight: normal;
+        }
+        
+        .highlight-red {
+            color: #ff0000;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+            display: block;
+            overflow: hidden;
+            margin-bottom: 60px;
+        }
+        
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 70%;
+            margin: auto;
+            left: 0;
+            margin-top: 100px;
+            right: 0;
+            z-index: 1;
+            display: block;
+            max-width: 800px;
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Add subtle border to make canvas visible */
+            touch-action: none; /* Prevent browser handling of touch events */
+            background-image: url('assets/map.svg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ff0000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            z-index: 10;
+            height: 60px; /* Fixed height */
+        }
+        
+        .nav-icon {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            gap: 4px;
+        }
+        
+        .nav-icon svg {
+            height: 24px;
+            width: auto;
+        }
+        
+        .nav-icon span {
+            margin-top: 2px;
+        }
+
+        .mission-banner {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 150px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 0;
+            text-align: center;
+            z-index: 5;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .mission-banner h2 {
+            color: black;
+            font-size: 16px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .mission-banner p {
+            color: black;
+            font-size: 12px;
+            margin: 5px 0 0;
+        }
+
+        .start-point {
+            position: absolute;
+            width: 100px;
+            height: 40px;
+            background-color: #ff6699;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            z-index: 3;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .start-arrow {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            z-index: 3;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .white-belt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .white-belt div {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .result-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 12;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .result-screen h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .result-screen p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .result-screen button {
+            padding: 12px 30px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        /* Media queries for different screen sizes */
+        @media screen and (max-height: 500px) {
+            .title-banner {
+                height: 50px;
+                padding: 5px 0;
+            }
+            
+            .title-banner h1 {
+                font-size: 16px;
+            }
+            
+            .title-banner h2 {
+                font-size: 12px;
+                margin-top: 2px;
+            }
+            
+            #gameCanvas {
+                height: 65%;
+                margin-top: 60px;
+                max-width: 600px;
+            }
+            
+            .nav-bar {
+                height: 50px;
+                padding: 5px 0;
+            }
+            
+            .nav-icon svg {
+                height: 20px;
+            }
+            
+            .nav-icon {
+                font-size: 9px;
+            }
+        }
+        
+        @media screen and (max-height: 400px) {
+            .title-banner h2 {
+                display: none; /* Hide Japanese text on very small screens */
+            }
+            
+            #gameCanvas {
+                height: 60%;
+                margin-top: 40px;
+                max-width: 500px;
+            }
+        }
+        
+        @media screen and (min-width: 768px) {
+            #gameCanvas {
+                max-width: 1000px;
+                height: 75%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Canvas for the game -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Title banner with highlighted letters -->
+        <div class="title-banner">
+            <h1>FIN<span class="highlight-red">G</span>ER CIRC<span class="highlight-red">U</span>IT</h1>
+            <h2>フィンガーサーキット</h2>
+        </div>
+
+        <!-- Mission Banner -->
+        <div class="mission-banner">
+            <h2>MISSION</h2>
+            <p>青い補助線に沿ってサーキットを描いてみよう！</p>
+        </div>
+
+        <!-- Start point (will be positioned dynamically) -->
+        <div id="startPoint" class="start-point">スタート</div>
+        <div id="startArrow" class="start-arrow">
+            <svg width="30" height="40" viewBox="0 0 30 40">
+                <path d="M15 0 L30 15 L15 30 L0 15 Z" fill="#ff6699"/>
+                <path d="M15 5 L15 25" stroke="white" stroke-width="3"/>
+                <path d="M15 5 L10 10" stroke="white" stroke-width="3"/>
+                <path d="M15 5 L20 10" stroke="white" stroke-width="3"/>
+            </svg>
+        </div>
+
+        <!-- White belt (initial instructions) -->
+        <div id="whiteBelt" class="white-belt">
+            <div>Get Ready...</div>
+        </div>
+
+        <!-- Result screen -->
+        <div id="resultScreen" class="result-screen">
+            <h2>完了しました！</h2>
+            <p>精度: <span id="accuracyResult">85</span>%</p>
+            <button id="retryButton">もう一度</button>
+            <button id="shareButton">共有</button>
+        </div>
+        
+        <!-- Navigation bar -->
+        <div class="nav-bar">
+            <a href="index.html" class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>HOME</span>
+            </a>
+            <a href="#" class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="6"></circle>
+                    <path d="M8 14h8"></path>
+                    <path d="M12 14v8"></path>
+                </svg>
+                <span>DRIVER</span>
+            </a>
+            <a href="#" class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 12h8"></path>
+                    <path d="M12 8v8"></path>
+                </svg>
+                <span>CIRCUIT</span>
+            </a>
+            <a href="#" class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                </svg>
+                <span></span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get canvas and context
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Game state and variables - MOVED UP before any functions that use it
+            const gameState = {
+                status: 'initializing', // initializing, ready, playing, completed
+                difficulty: 'beginner',
+                userPath: [],
+                lastPoint: null,
+                isDrawing: false,
+                startPoint: { x: 0, y: 0 }, // Will be set properly in initializeCircuitPath
+                startRadius: 20,
+                circuitPath: [],
+                completionThreshold: 20, // Distance to consider the circuit completed when returning to start
+                accuracy: 0
+            };
+
+            // Set canvas size
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight * 0.7;
+                
+                // Re-initialize circuit path after resize
+                initializeCircuitPath();
+                
+                // Re-draw everything after resize
+                if (gameState.status === 'playing' || gameState.status === 'ready') {
+                    drawCircuit();
+                    if (gameState.userPath.length > 0) {
+                        drawUserPath();
+                    }
+                }
+                
+                console.log("Canvas resized to:", canvas.width, "x", canvas.height);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Create circuit path
+            function initializeCircuitPath() {
+                // Get current canvas dimensions
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                // Calculate start point relative to current canvas size - positioned on a road in the map
+                gameState.startPoint = { 
+                    x: canvasRect.width * 0.25, 
+                    y: canvasRect.height * 0.7 
+                };
+
+                // Define the circuit path using percentages - following roads on the map
+                gameState.circuitPath = [
+                    { x: gameState.startPoint.x, y: gameState.startPoint.y },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.1, y: gameState.startPoint.y - canvasRect.height * 0.1 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.2, y: gameState.startPoint.y - canvasRect.height * 0.15 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.3, y: gameState.startPoint.y - canvasRect.height * 0.1 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.4, y: gameState.startPoint.y - canvasRect.height * 0.2 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.5, y: gameState.startPoint.y - canvasRect.height * 0.3 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.6, y: gameState.startPoint.y - canvasRect.height * 0.2 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.5, y: gameState.startPoint.y - canvasRect.height * 0.1 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.4, y: gameState.startPoint.y },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.3, y: gameState.startPoint.y + canvasRect.height * 0.1 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.2, y: gameState.startPoint.y + canvasRect.height * 0.05 },
+                    { x: gameState.startPoint.x + canvasRect.width * 0.1, y: gameState.startPoint.y + canvasRect.height * 0.02 },
+                    { x: gameState.startPoint.x, y: gameState.startPoint.y }
+                ];
+
+                // Position the start UI elements
+                positionStartElements();
+                
+                // Force redraw
+                drawCircuit();
+                console.log('Circuit drawn at:', gameState.startPoint);
+            }
+
+            // Position the start point and arrow UI elements
+            function positionStartElements() {
+                const startPointElem = document.getElementById('startPoint');
+                const startArrowElem = document.getElementById('startArrow');
+                
+                startPointElem.style.left = `${gameState.startPoint.x - 50}px`;
+                startPointElem.style.top = `${gameState.startPoint.y - 20}px`;
+                
+                startArrowElem.style.left = `${gameState.startPoint.x - 15}px`;
+                startArrowElem.style.top = `${gameState.startPoint.y - 70}px`;
+            }
+
+            // Draw the circuit guidelines
+            function drawCircuit() {
+                // Don't clear the entire canvas to keep the map visible
+                // Only clear the area where we'll draw the path
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the circuit path (blue lines)
+                ctx.beginPath();
+                ctx.moveTo(gameState.circuitPath[0].x, gameState.circuitPath[0].y);
+                for (let i = 1; i < gameState.circuitPath.length; i++) {
+                    ctx.lineTo(gameState.circuitPath[i].x, gameState.circuitPath[i].y);
+                }
+                ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)'; // Semi-transparent blue
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // Draw the start point (pink circle)
+                ctx.beginPath();
+                ctx.arc(gameState.startPoint.x, gameState.startPoint.y, gameState.startRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff6699';
+                ctx.fill();
+                
+                // Add a pulsing effect to the start point
+                if (gameState.status === 'ready') {
+                    // Draw outer circle with animation
+                    const pulseSize = gameState.startRadius * 1.5 + Math.sin(Date.now() / 200) * 5;
+                    ctx.beginPath();
+                    ctx.arc(gameState.startPoint.x, gameState.startPoint.y, pulseSize, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ff6699';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Add "Start Here" text
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#ff6699'; // White text for better visibility on map
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Start Here', gameState.startPoint.x, gameState.startPoint.y + gameState.startRadius * 3);
+                    
+                    // Request animation frame to keep pulsing
+                    if (gameState.status === 'ready') {
+                        requestAnimationFrame(drawCircuit);
+                    }
+                }
+            }
+
+            // Draw the user's path
+            function drawUserPath() {
+                if (gameState.userPath.length < 2) return;
+                
+                ctx.beginPath();
+                ctx.moveTo(gameState.userPath[0].x, gameState.userPath[0].y);
+                for (let i = 1; i < gameState.userPath.length; i++) {
+                    ctx.lineTo(gameState.userPath[i].x, gameState.userPath[i].y);
+                }
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Semi-transparent red
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            // Check if the user has completed the circuit
+            function checkCompletion() {
+                if (gameState.userPath.length < 10) return false; // Need a minimum path length
+                
+                const lastPoint = gameState.userPath[gameState.userPath.length - 1];
+                const dx = lastPoint.x - gameState.startPoint.x;
+                const dy = lastPoint.y - gameState.startPoint.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // If we're back near the start point and have drawn enough
+                if (distance < gameState.completionThreshold) {
+                    calculateAccuracy();
+                    return true;
+                }
+                
+                return false;
+            }
+
+            // Calculate accuracy by comparing user path to ideal path
+            function calculateAccuracy() {
+                // Simple algorithm: sample points along both paths and compare distances
+                let totalDeviation = 0;
+                const samplePoints = 50;
+                
+                // Normalize path lengths by resampling
+                const userSamples = resamplePath(gameState.userPath, samplePoints);
+                const idealSamples = resamplePath(gameState.circuitPath, samplePoints);
+                
+                // Calculate deviation for each point
+                for (let i = 0; i < samplePoints; i++) {
+                    const dx = userSamples[i].x - idealSamples[i].x;
+                    const dy = userSamples[i].y - idealSamples[i].y;
+                    totalDeviation += Math.sqrt(dx * dx + dy * dy);
+                }
+                
+                // Calculate average deviation and convert to accuracy percentage
+                const avgDeviation = totalDeviation / samplePoints;
+                const maxDeviation = Math.max(canvas.width, canvas.height) / 4; // Reasonable max deviation
+                
+                // Convert deviation to accuracy (0-100%)
+                gameState.accuracy = Math.max(0, Math.min(100, 100 - (avgDeviation / maxDeviation) * 100));
+                
+                // Round to whole number
+                gameState.accuracy = Math.round(gameState.accuracy);
+                
+                // Update UI
+                document.getElementById('accuracyResult').textContent = gameState.accuracy;
+            }
+
+            // Resample a path to have a specific number of points
+            function resamplePath(path, numPoints) {
+                if (path.length <= 1) return path;
+                
+                const result = [];
+                const totalLength = pathLength(path);
+                const segmentLength = totalLength / (numPoints - 1);
+                
+                result.push(path[0]); // Always include first point
+                
+                let currentDist = 0;
+                let currentSegment = 0;
+                
+                for (let i = 1; i < numPoints - 1; i++) {
+                    const targetDist = i * segmentLength;
+                    
+                    // Find the segment containing this distance
+                    while (currentDist + segmentDistance(path[currentSegment], path[currentSegment + 1]) < targetDist) {
+                        currentDist += segmentDistance(path[currentSegment], path[currentSegment + 1]);
+                        currentSegment++;
+                    }
+                    
+                    // Interpolate within the segment
+                    const segDist = targetDist - currentDist;
+                    const segTotalDist = segmentDistance(path[currentSegment], path[currentSegment + 1]);
+                    const t = segDist / segTotalDist;
+                    
+                    result.push({
+                        x: path[currentSegment].x + t * (path[currentSegment + 1].x - path[currentSegment].x),
+                        y: path[currentSegment].y + t * (path[currentSegment + 1].y - path[currentSegment].y)
+                    });
+                }
+                
+                result.push(path[path.length - 1]); // Always include last point
+                return result;
+            }
+
+            // Calculate total path length
+            function pathLength(path) {
+                let length = 0;
+                for (let i = 1; i < path.length; i++) {
+                    length += segmentDistance(path[i-1], path[i]);
+                }
+                return length;
+            }
+
+            // Calculate distance between two points
+            function segmentDistance(p1, p2) {
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Handle touch/mouse events
+            function handleStart(e) {
+                e.preventDefault();
+                console.log("Touch/mouse event detected:", e.type);
+                console.log("Game state:", gameState.status);
+                
+                // Don't start if not in ready state
+                if (gameState.status !== 'ready') {
+                    console.log("Game not ready yet, current state:", gameState.status);
+                    return;
+                }
+                
+                try {
+                    const pos = getEventPosition(e);
+                    console.log('Start position:', pos);
+                    
+                    // Check if starting near the start point
+                    const dx = pos.x - gameState.startPoint.x;
+                    const dy = pos.y - gameState.startPoint.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    console.log('Distance from start:', distance, 'Threshold:', gameState.startRadius * 3);
+                    
+                    if (distance < gameState.startRadius * 3) { // Increased from *2 to make it easier to start
+                        // Start drawing
+                        gameState.isDrawing = true;
+                        gameState.status = 'playing';
+                        gameState.userPath = [{ x: gameState.startPoint.x, y: gameState.startPoint.y }];
+                        gameState.lastPoint = { x: gameState.startPoint.x, y: gameState.startPoint.y };
+                        
+                        // Fade out start elements
+                        document.getElementById('startPoint').style.opacity = '0.3';
+                        document.getElementById('startArrow').style.opacity = '0';
+                        
+                        console.log("Game started successfully!");
+                        
+                        // Force redraw to show initial state
+                        drawCircuit();
+                        drawUserPath();
+                    } else {
+                        console.log("Touch not close enough to start point");
+                    }
+                } catch (error) {
+                    console.error("Error in handleStart:", error);
+                }
+            }
+
+            function handleMove(e) {
+                e.preventDefault();
+                
+                if (!gameState.isDrawing) return;
+                
+                const pos = getEventPosition(e);
+                
+                // Add point to path
+                gameState.userPath.push({ x: pos.x, y: pos.y });
+                gameState.lastPoint = { x: pos.x, y: pos.y };
+                
+                // Redraw
+                drawCircuit();
+                drawUserPath();
+                
+                // Check for completion
+                if (checkCompletion()) {
+                    gameState.isDrawing = false;
+                    gameState.status = 'completed';
+                    showResultScreen();
+                }
+            }
+
+            function handleEnd(e) {
+                e.preventDefault();
+                
+                // If lifted finger, just stop drawing until next touch
+                if (gameState.isDrawing) {
+                    gameState.isDrawing = false;
+                }
+            }
+
+            function getEventPosition(e) {
+                let x, y;
+                
+                try {
+                    if (e.type.includes('touch')) {
+                        const touch = e.touches[0] || e.changedTouches[0];
+                        if (!touch) {
+                            console.error("No touch found in event:", e);
+                            return { x: 0, y: 0 };
+                        }
+                        
+                        const rect = canvas.getBoundingClientRect();
+                        x = touch.clientX - rect.left;
+                        y = touch.clientY - rect.top;
+                        console.log("Touch position:", touch.clientX, touch.clientY, "Canvas rect:", rect.left, rect.top);
+                    } else {
+                        const rect = canvas.getBoundingClientRect();
+                        x = e.clientX - rect.left;
+                        y = e.clientY - rect.top;
+                        console.log("Mouse position:", e.clientX, e.clientY, "Canvas rect:", rect.left, rect.top);
+                    }
+                    
+                    console.log("Event position calculated:", x, y);
+                    return { x, y };
+                } catch (error) {
+                    console.error("Error in getEventPosition:", error);
+                    return { x: 0, y: 0 }; // Return default position in case of error
+                }
+            }
+
+            // Show result screen
+            function showResultScreen() {
+                document.getElementById('resultScreen').style.display = 'flex';
+            }
+
+            // Initialize the game
+            function initGame() {
+                console.log("Starting game initialization...");
+                
+                try {
+                    // Initialize circuit
+                    initializeCircuitPath();
+                    drawCircuit();
+                    
+                    // Show white belt with countdown - SIMPLIFIED
+                    const whiteBelt = document.getElementById('whiteBelt');
+                    const missionBanner = document.querySelector('.mission-banner');
+                    
+                    whiteBelt.style.display = 'flex';
+                    whiteBelt.style.opacity = '1';
+                    missionBanner.style.opacity = '1';
+                    gameState.status = 'initializing';
+                    
+                    console.log("Game initializing, waiting for ready state...");
+                    
+                    // Direct timeout without nesting
+                    setTimeout(function() {
+                        try {
+                            whiteBelt.style.opacity = '0';
+                            whiteBelt.style.display = 'none';
+                            missionBanner.style.opacity = '0';
+                            missionBanner.style.display = 'none';
+                            gameState.status = 'ready';
+                            console.log("Game is now ready! Status:", gameState.status);
+                            
+                            // Force redraw after ready state
+                            drawCircuit();
+                        } catch (error) {
+                            console.error("Error in ready state transition:", error);
+                        }
+                    }, 2000);
+                    
+                    // Remove any existing event listeners to prevent duplicates
+                    canvas.removeEventListener('mousedown', handleStart);
+                    canvas.removeEventListener('mousemove', handleMove);
+                    canvas.removeEventListener('mouseup', handleEnd);
+                    canvas.removeEventListener('touchstart', handleStart);
+                    canvas.removeEventListener('touchmove', handleMove);
+                    canvas.removeEventListener('touchend', handleEnd);
+                    
+                    // Add event listeners with passive: false
+                    canvas.addEventListener('mousedown', handleStart, { passive: false });
+                    canvas.addEventListener('mousemove', handleMove, { passive: false });
+                    canvas.addEventListener('mouseup', handleEnd, { passive: false });
+                    canvas.addEventListener('touchstart', handleStart, { passive: false });
+                    canvas.addEventListener('touchmove', handleMove, { passive: false });
+                    canvas.addEventListener('touchend', handleEnd, { passive: false });
+                    
+                    // Add button event listeners
+                    document.getElementById('retryButton').addEventListener('click', resetGame);
+                    document.getElementById('shareButton').addEventListener('click', shareResult);
+                    
+                    console.log("Game initialized, canvas size:", canvas.width, "x", canvas.height);
+                    console.log("Start point:", gameState.startPoint);
+                    
+                    // Debug the game state immediately
+                    debugGameState();
+                } catch (error) {
+                    console.error("Error during game initialization:", error);
+                }
+            }
+
+            // Reset game - also simplify the timing logic here
+            function resetGame() {
+                // Reset game state
+                gameState.status = 'initializing';
+                gameState.userPath = [];
+                gameState.isDrawing = false;
+                
+                // Reset UI
+                document.getElementById('resultScreen').style.display = 'none';
+                document.getElementById('startPoint').style.opacity = '1';
+                document.getElementById('startArrow').style.opacity = '1';
+                
+                // Clear canvas and redraw
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawCircuit();
+                
+                // Show white belt and mission banner again
+                const whiteBelt = document.getElementById('whiteBelt');
+                const missionBanner = document.querySelector('.mission-banner');
+                
+                whiteBelt.style.display = 'flex';
+                whiteBelt.style.opacity = '1';
+                missionBanner.style.display = 'block';
+                missionBanner.style.opacity = '1';
+                
+                console.log("Game reset, waiting for ready state...");
+                
+                // Direct timeout without nesting
+                setTimeout(function() {
+                    whiteBelt.style.opacity = '0';
+                    whiteBelt.style.display = 'none';
+                    missionBanner.style.opacity = '0';
+                    missionBanner.style.display = 'none';
+                    gameState.status = 'ready';
+                    console.log("Game reset and ready! Status:", gameState.status);
+                    
+                    // Force redraw after ready state
+                    drawCircuit();
+                }, 2000);
+            }
+
+            // Share result
+            function shareResult() {
+                // Implement sharing functionality (could use Web Share API)
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'My Finger Circuit Result',
+                        text: `I completed the Finger Circuit with ${gameState.accuracy}% accuracy!`
+                    }).catch(console.error);
+                } else {
+                    alert(`You completed the circuit with ${gameState.accuracy}% accuracy! Screenshot to share.`);
+                }
+            }
+            
+            // Debug function to help troubleshoot issues
+            function debugGameState() {
+                console.log("=== GAME STATE DEBUG ===");
+                console.log("Status:", gameState.status);
+                console.log("Canvas size:", canvas.width, "x", canvas.height);
+                console.log("Start point:", gameState.startPoint);
+                console.log("Is drawing:", gameState.isDrawing);
+                console.log("User path length:", gameState.userPath.length);
+                console.log("Circuit path:", gameState.circuitPath);
+                console.log("=== END DEBUG ===");
+            }
+            
+            // Add debug button for mobile testing
+            const debugButton = document.createElement('button');
+            debugButton.textContent = "Debug";
+            debugButton.style.position = "fixed";
+            debugButton.style.bottom = "70px";
+            debugButton.style.right = "10px";
+            debugButton.style.zIndex = "100";
+            debugButton.style.padding = "5px 10px";
+            debugButton.style.background = "#333";
+            debugButton.style.color = "white";
+            debugButton.style.border = "none";
+            debugButton.style.borderRadius = "5px";
+            debugButton.addEventListener('click', debugGameState);
+            document.body.appendChild(debugButton);
+
+            // Start the game - Call resizeCanvas after all functions are defined
+            resizeCanvas();
+            initGame();
+        });
+    </script>
+</body>
+</html>
